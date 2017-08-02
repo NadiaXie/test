@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body{text-align: center;}
+        #c1{background: #ddd;}
+    </style>
+
+<body>
+<canvas id="c1" width="1000" height="600"></canvas>
+
+<script>
+    var H=c1.height,W=c1.width;//画布宽高
+    var w=40;//格子大小
+    var ctx=c1.getContext("2d");
+    var snack=[];//保存蛇的每一个位置
+    var der="R";//方向 U D L R
+    snack[0]=[W/2-w/2,H/2-w/2];
+    ctx.fillStyle="green";
+    ctx.fillRect(snack[0][0],snack[0][1],w,w);
+    function pnext(){
+        var next=[];
+        if(der=="R")
+            next=[1,0];
+        if(der=="L")
+            next=[-1,0];
+        if(der=="U")
+            next=[0,-1];
+        if(der=="D")
+            next=[0,1];
+        var x=snack[0][0]+next[0]*w;
+        var y=snack[0][1]+next[1]*w;
+        return [x,y];
+    }
+    function paint(){
+        var newhead=pnext();
+        var x=newhead[0],y=newhead[1];
+
+
+        //画食物
+        if(!food) {
+            newfood();
+            ctx.beginPath();
+            ctx.fillStyle = "orange";
+            ctx.arc(food[0], food[1], w / 2, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+
+
+        snack.unshift(newhead);//拼最前一个
+        ctx.fillStyle="green";
+        ctx.fillRect(x,y,w,w);
+        console.log(1);
+        var i=snack.length-1;//去掉最后一个
+        ctx.clearRect(snack[i][0],snack[i][1],w,w);
+        snack.length--;
+
+
+        if(x>W-w||x<0||y>H-w||y<0||isCover(x+w/2,y+w/2,1)){
+            clearInterval(timer);
+            console.log("游戏结束");
+            console.log(x,y);
+            return;
+        }
+        //吃食物
+        if((x+w/2-food[0])*(x+w/2-food[0])+(y+w/2-food[1])*(y+w/2-food[1])<=w*w){
+            ctx.clearRect(food[0]-w/2,food[1]-w/2,w,w);
+            var add=pnext();
+            snack.unshift(add);//拼最前一个
+            ctx.fillStyle="green";
+            ctx.fillRect(x,y,w,w);
+            ctx.fillRect(add[0],add[y],w,w);
+            food=null;
+        }
+
+
+
+    }
+    var timer=setInterval(paint,300);
+    document.onkeydown=function(e){
+        switch (e.keyCode){
+            case 38:{der="U";break;}
+            case 40:{der="D";break;}
+            case 39:{der="R";break;}
+            case 37:{der="L";break;}
+        }
+    }
+    var food=null;
+    function newfood(){
+        do {
+            var x = parseInt(Math.random() * W);
+            var y = parseInt(Math.random() * H);
+        }while(isCover(x,y,0));
+        food=[x,y];
+    }
+    function isCover(cx,cy,start){
+        for(var i=start;i<snack.length;i++){
+            var cenx=snack[i][0]+w/2;//中心位置
+            var ceny=snack[i][1]+w/2;
+            if((cx-cenx)*(cx-cenx)+(cy-ceny)*(cy-ceny)<w*w){
+                console.log("cover"+cx+",,,"+cy+",,,,"+i);
+                console.log((cx-cenx)*(cx-cenx)+(cy-ceny)*(cy-ceny));
+                console.log(cx,cenx);
+                console.log(cy,ceny);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+</script>
+</body>
+</html>
